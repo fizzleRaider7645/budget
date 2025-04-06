@@ -10,3 +10,7 @@ dry-run:
 
 replace:
 	python3 update_budget_log.py march 2025 --replace
+
+env:
+	python3 -m venv budget-env
+	source budget-env/bin/activate && pip install -r requirements.txt
