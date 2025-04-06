@@ -18,13 +18,15 @@ if not creds_path or not os.path.exists(creds_path):
 # === ARGUMENTS ===
 parser = argparse.ArgumentParser(description="Merge recurring and spending data and update Google Sheet.")
 parser.add_argument("--month", required=True, help="Month name (e.g. 'March')")
+parser.add_argument("--year", default=datetime.now().year, help="Year (e.g. 2025)")
 parser.add_argument("--recurring", required=True, help="Path to recurring CSV")
 parser.add_argument("--spending", required=True, help="Path to spending CSV")
 args = parser.parse_args()
 
 # === SETUP VARIABLES ===
 month_name = args.month.strip().capitalize()
-sheet_tab_name = f"{month_name}-Budget_Log"
+year_suffix = str(args.year)[-2:]  # "25" from "2025"
+sheet_tab_name = f"{month_name}-Budget-{year_suffix}_Log"
 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # === PARSE CSVs ===
@@ -50,8 +52,8 @@ try:
         log_sheet = spreadsheet.worksheet(sheet_tab_name)
         print(f"📄 Found existing tab: '{sheet_tab_name}'")
     except WorksheetNotFound:
-        log_sheet = spreadsheet.add_worksheet(title=sheet_tab_name, rows="1000", cols="4")
-        log_sheet.append_row(["Timestamp", "Month", "Category", "Amount"])
+        log_sheet = spreadsheet.add_worksheet(title=sheet_tab_name, rows="1000", cols="5")
+        log_sheet.append_row(["Timestamp", "Month", "Year", "Category", "Amount"])
         print(f"🆕 Created new tab: '{sheet_tab_name}'")
 
 except Exception as e:
@@ -60,7 +62,7 @@ except Exception as e:
 
 # === APPEND DATA ===
 for category, amount in merged_totals.items():
-    row = [timestamp, month_name, category, round(amount, 2)]
+    row = [timestamp, month_name, str(args.year), category, round(amount, 2)]
     log_sheet.append_row(row)
 
-print(f"✅ Data successfully appended to '{sheet_tab_name}' for {month_name}.")
+print(f"✅ Data successfully appended to '{sheet_tab_name}' for {month_name} {args.year}.")
