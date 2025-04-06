@@ -38,16 +38,18 @@ Makefile
 ## ⚙️ Setup
 
 1. Clone this repo
-2. Install dependencies:
+2. Install dependencies manually:
 
 ```bash
+python3 -m venv budget_env
+source budget_env/bin/activate
 pip install -r requirements.txt
 ```
 
-Or use the Makefile:
+Or using the Makefile:
 
 ```bash
-make setup
+make env
 ```
 
 3. Create a `.env` file:
@@ -57,41 +59,29 @@ GOOGLE_CREDS_PATH=/path/to/your/credentials.json
 SPREADSHEET_NAME=Budget_Dynamic
 ```
 
-4. Export your Rocket Money (or similar) data to CSV:
-
-- Put recurring charges in `~/Documents/budget/recurring/march.csv`
-- Put spending transactions in `~/Documents/budget/spending/march.csv`
-
 ---
 
 ## ▶️ Usage
 
-### Basic example:
+You must pass in the target month and year when using `make`:
 
 ```bash
-python3 update_budget_log.py march 2025
+make run MONTH=march YEAR=2025
 ```
 
-Or using Makefile:
+### Other Makefile commands
+
+| Command        | Description                                       |
+| -------------- | ------------------------------------------------- |
+| `make env`     | Create venv + install packages                    |
+| `make run`     | Run the update script for the month/year you pass |
+| `make dry-run` | Preview parsed values (no write to sheet)         |
+| `make replace` | Wipe tab content and re-write clean data          |
+
+Example:
 
 ```bash
-make run
-```
-
-### Dry run (preview only):
-
-```bash
-python3 update_budget_log.py march 2025 --dry-run
-# or
-make dry-run
-```
-
-### Replace existing tab contents:
-
-```bash
-python3 update_budget_log.py march 2025 --replace
-# or
-make replace
+make dry-run MONTH=april YEAR=2024
 ```
 
 ---
