@@ -1,0 +1,43 @@
+# Virtual environments
+venv/
+.env/
+budget_env/
+.Python
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# macOS system files
+.DS_Store
+
+# IDE/project files
+.vscode/
+.idea/
+*.swp
+
+# API credentials
+credentials.json
+*.json
+
+# Environment config
+.env
+.env.*
+
+# Data exports / personal financial files
+*.csv
+Documents/budget/
+!Documents/budget/README.md  # (optional - keep docs, not data)
+
+# Logs or outputs
+*.log
+*.tmp
+*.bak
+
+# Jupyter or notebooks (if ever used)
+.ipynb_checkpoints/
+
+# Output reports or Excel
+*.xlsx
