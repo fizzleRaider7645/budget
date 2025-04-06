@@ -1,7 +1,7 @@
 # Virtual environments
 venv/
 .env/
-budget_env/
+budget-env/
 .Python
 
 # Python cache
