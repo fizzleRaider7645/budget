@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description="Update budget log by month and yea
 parser.add_argument("month", help="Month name (e.g. 'march')")
 parser.add_argument("year", type=int, help="Year (e.g. 2025)")
 parser.add_argument("--dry-run", action="store_true", help="Print what would be written without modifying Google Sheet")
+parser.add_argument("--replace", action="store_true", help="Replace existing log tab content instead of appending")
 args = parser.parse_args()
 
 # === SETUP ===
@@ -48,13 +49,13 @@ merged_totals = recurring_totals.copy()
 for category, amount in spending_totals.items():
     merged_totals[category] = merged_totals.get(category, 0) + amount
 
-# === DRY RUN OUTPUT ===
+# === DRY RUN ===
 if args.dry_run:
-    print(f"\n🌱 [Dry Run] Would append to: '{sheet_tab_name}'")
+    print(f"\n🌱 [Dry Run] Would write to: '{sheet_tab_name}'")
     print("📝 Data preview:")
     for category, amount in merged_totals.items():
         print(f" - {category:20} ${amount:,.2f}")
-    print("\n✅ Dry run complete — no data was written.\n")
+    print("\n✅ Dry run complete — no data written.\n")
     exit(0)
 
 # === CONNECT TO GOOGLE SHEETS ===
@@ -67,17 +68,24 @@ try:
     try:
         log_sheet = spreadsheet.worksheet(sheet_tab_name)
         print(f"📄 Found existing tab: '{sheet_tab_name}'")
+
+        if args.replace:
+            log_sheet.clear()
+            log_sheet.append_row(["Timestamp", "Month", "Year", "Category", "Amount"])
+            print("♻️ Replaced tab contents with fresh data")
+
     except WorksheetNotFound:
         log_sheet = spreadsheet.add_worksheet(title=sheet_tab_name, rows="1000", cols="5")
         log_sheet.append_row(["Timestamp", "Month", "Year", "Category", "Amount"])
         print(f"🆕 Created new tab: '{sheet_tab_name}'")
+
 except Exception as e:
     print(f"❌ Could not open Budget_Dynamic sheet or create tab: {e}")
     exit(1)
 
-# === APPEND TO SHEET ===
+# === WRITE TO SHEET ===
 for category, amount in merged_totals.items():
     row = [timestamp, month_name, str(args.year), category, round(amount, 2)]
     log_sheet.append_row(row)
 
-print(f"✅ Data appended to '{sheet_tab_name}' for {month_name} {args.year}.")
+print(f"✅ Data {'replaced' if args.replace else 'appended'} to '{sheet_tab_name}' for {month_name} {args.year}'.")
