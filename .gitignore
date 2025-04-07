@@ -20,7 +20,6 @@ __pycache__/
 
 # API credentials
 credentials.json
-*.json
 
 # Environment config
 .env
@@ -41,3 +40,6 @@ Documents/budget/
 
 # Output reports or Excel
 *.xlsx
+
+# Archived scripts
+archive
