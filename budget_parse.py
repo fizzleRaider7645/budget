@@ -1,86 +1,81 @@
 import os
 import json
-import pandas as pd
 import argparse
+import pandas as pd
 from dotenv import load_dotenv
 import gspread
-from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
-import calendar
 
-# === Load .env ===
 load_dotenv()
 
-# === Constants ===
 MAP_PATH = "vendor_map.json"
-COLUMNS_TO_KEEP = [
-    "Original Date", "Account Type", "Account Name", "Account Number",
-    "Institution Name", "Name", "Amount", "Description", "Category"
-]
+REQUIRED_COLUMNS = ["Original Date", "Name", "Amount", "Category"]
 
-
-def get_csv_path(base_dir: str, section: str, month: str) -> str:
-    """Resolve CSV path from base dir, section, and month."""
-    try:
-        month_name = month.strip().capitalize()
-        if month_name not in calendar.month_name:
-            raise ValueError
-    except ValueError:
-        raise ValueError(f"Invalid month: {month}. Must be a valid full month name (e.g. March).")
-
-    return os.path.expanduser(f"{base_dir}/{section}/{month.lower()}.csv")
-
-
-def load_vendor_map() -> dict:
+def load_vendor_map():
     if os.path.exists(MAP_PATH):
         with open(MAP_PATH) as f:
             return json.load(f)
     return {"recurring": {}, "spending": {}}
 
-
-def save_vendor_map(vendor_map: dict) -> None:
+def save_vendor_map(vendor_map):
     with open(MAP_PATH, "w") as f:
         json.dump(vendor_map, f, indent=2)
-    print(f"\n✅ vendor_map.json updated with {sum(len(v) for v in vendor_map.values())} total vendors.")
+    print(f"\n✅ vendor_map.json updated with {sum(len(v) for v in vendor_map.values())} total vendors.\n")
 
-
-def parse_csv(path: str, section: str, vendor_map: dict) -> list:
+def load_csv(section, month):
+    path = os.path.expanduser(f"~/Documents/budget/{section}/{month.lower()}.csv")
+    if not os.path.exists(path):
+        print(f"⚠️  {section.capitalize()} file not found: {path}")
+        return pd.DataFrame()
     df = pd.read_csv(path)
     df.columns = df.columns.str.strip()
-    df = df[COLUMNS_TO_KEEP]
-    df["Amount"] = df["Amount"].astype(str).str.replace(r"[$,]", "", regex=True).astype(float)
+    missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    if missing:
+        raise ValueError(f"❌ Missing required columns in {section} CSV: {missing}")
+    df["Amount"] = df["Amount"].replace('[\$,]', '', regex=True).astype(float)
     df["Type"] = section
+    return df
 
-    new_transactions = []
+def process_section(section, df, vendor_map):
+    if df.empty:
+        return [], {}
+
+    rows = []
+    summary = {}
 
     print(f"\n🔍 {section.capitalize()} Transactions:")
     for _, row in df.iterrows():
-        name = str(row["Name"]).strip()
-        amount = row["Amount"]
-        vendor_data = {col: row[col] for col in COLUMNS_TO_KEEP if col in row}
-        vendor_data["Type"] = section
-
-        category = vendor_data.get("Category", "").strip()
+        vendor = str(row["Name"]).strip()
+        category = str(row.get("Category", "Uncategorized")).strip()
         if not category:
-            vendor_data["Category"] = "Uncategorized"
-        print(f"✅ {name:40} → {vendor_data['Category']:15} (+${amount:.2f})")
+            category = "Uncategorized"
 
-        vendor_map[section][name] = vendor_data
-        new_transactions.append({
-            "Timestamp": datetime.now().isoformat(),
-            "Vendor": name,
+        amount = row["Amount"]
+        timestamp = row["Original Date"]
+
+        if vendor not in vendor_map[section]:
+            vendor_map[section][vendor] = {
+                "Category": category,
+                "Sample": row.to_dict()
+            }
+
+        rows.append({
+            "Timestamp": timestamp,
+            "Vendor": vendor,
             "Amount": amount,
             "Type": section,
-            "Category": vendor_data["Category"]
+            "Category": category
         })
 
-    return new_transactions
+        summary[category] = summary.get(category, 0) + amount
+        print(f"✅ {vendor:<40} → {category:<20} (+${amount:.2f})")
 
+    return rows, summary
 
-def push_to_google_sheets(month: str, year: str, rows: list, replace: bool) -> None:
+def push_to_google_sheets(month, year, all_transactions, replace=False):
     tab_name = f"{month}-Budget-{year}"
-    sheet_name = os.getenv("SPREADSHEET_NAME")
-    credentials_file = os.getenv("GOOGLE_CREDS_PATH")
+    sheet_name = os.getenv("SPREADSHEET_NAME", "Budget_Dynamic")
+    credentials_file = os.getenv("GOOGLE_CREDS_PATH", "credentials.json")
 
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
@@ -95,63 +90,56 @@ def push_to_google_sheets(month: str, year: str, rows: list, replace: bool) -> N
     try:
         worksheet = sheet.worksheet(tab_name)
         if not replace:
-            print(f"⚠️ Tab '{tab_name}' already exists. No data was pushed. Use '--replace' to overwrite.")
+            print(f"⚠️ Tab '{tab_name}' already exists. Use --replace to overwrite.")
             return
         worksheet.clear()
     except gspread.exceptions.WorksheetNotFound:
         worksheet = sheet.add_worksheet(title=tab_name, rows="1000", cols="5")
 
-    # Header
+    # Prepare rows
     header = ["Timestamp", "Vendor", "Amount", "Type", "Category"]
-    worksheet.append_row(header)
-
-    for row in rows:
-        gsheet_row = [
-            row.get("Timestamp", ""),
-            row.get("Vendor", ""),
-            f"{row.get('Amount', 0):.2f}",
-            row.get("Type", ""),
-            row.get("Category", "")
+    rows = [header] + [
+        [
+            tx.get("Timestamp", ""),
+            tx.get("Vendor", ""),
+            f"{tx.get('Amount', 0):.2f}",
+            tx.get("Type", ""),
+            tx.get("Category", "")
         ]
-        worksheet.append_row(gsheet_row)
+        for tx in all_transactions
+    ]
 
+    worksheet.append_rows(rows)
     print(f"\n✅ Google Sheet '{tab_name}' updated successfully.")
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Parse and push budget data")
+    parser = argparse.ArgumentParser(description="Parse budget CSVs and update Google Sheet")
     parser.add_argument("month", help="Month to process (e.g. march)")
     parser.add_argument("year", help="Year to process (e.g. 2025)")
-    parser.add_argument("--replace", action="store_true", help="Replace existing Google Sheet tab if exists")
-    parser.add_argument("--dry-run", action="store_true", help="Print summary without writing to Google Sheets")
+    parser.add_argument("--replace", action="store_true", help="Replace Google Sheet tab if exists")
+    parser.add_argument("--dry-run", action="store_true", help="Don't write to sheet, just print")
     args = parser.parse_args()
 
-    month = args.month.strip().capitalize()
-    year = args.year.strip()
-    dry_run = args.dry_run
+    month = args.month.capitalize()
+    year = args.year
     replace = args.replace
+    dry_run = args.dry_run
 
     vendor_map = load_vendor_map()
-    all_transactions = []
 
-    for section in ["recurring", "spending"]:
-        try:
-            path = get_csv_path("~/Documents/budget", section, month)
-            if not os.path.exists(path):
-                print(f"⚠️ {section.capitalize()} file not found: {path}")
-                continue
-            transactions = parse_csv(path, section, vendor_map)
-            all_transactions.extend(transactions)
-        except Exception as e:
-            print(f"❌ Error processing {section} data: {e}")
+    recurring_df = load_csv("recurring", month)
+    spending_df = load_csv("spending", month)
 
+    recurring_rows, _ = process_section("recurring", recurring_df, vendor_map)
+    spending_rows, _ = process_section("spending", spending_df, vendor_map)
+
+    all_transactions = recurring_rows + spending_rows
     save_vendor_map(vendor_map)
 
-    if not dry_run:
-        push_to_google_sheets(month, year, all_transactions, replace=replace)
-    else:
+    if dry_run:
         print("\n🧪 Dry run enabled — no data was pushed to Google Sheets.")
-
+    else:
+        push_to_google_sheets(month, year, all_transactions, replace=replace)
 
 if __name__ == "__main__":
     main()
