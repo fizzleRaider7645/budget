@@ -1,40 +1,32 @@
-VENV_DIR=budget-env
-PYTHON=$(VENV_DIR)/bin/python3
-PIP=$(VENV_DIR)/bin/pip
+.PHONY: setup env run dry-run replace edit
 
-.PHONY: help init run dry-run replace edit clean
+# Create and activate Python virtual environment
+setup:
+	python3 -m venv budget_env
+	source budget_env/bin/activate && pip install -r requirements.txt
 
-help:
-	@echo "Available targets:"
-	@echo "  init        Set up virtual environment and install dependencies"
-	@echo "  run         Run budget_parse with default arguments (edit script manually)"
-	@echo "  dry-run     Run budget_parse in dry-run mode (edit date in target)"
-	@echo "  replace     Run budget_parse with --replace (edit date in target)"
-	@echo "  edit        Edit the vendor_map.json (optionally add CAT=your_config.json)"
-	@echo "  clean       Remove the virtual environment"
+env:
+	python3 -m venv budget_env
+	source budget_env/bin/activate && pip install -r requirements.txt
 
-init:
-	python3 -m venv $(VENV_DIR)
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
-
+# Run full update script for given month/year
 run:
-	$(PYTHON) budget_parse.py march 2025
+	python3 update_budget_log.py $(MONTH) $(YEAR)
 
+# Run update script in dry-run mode
 dry-run:
-	$(PYTHON) budget_parse.py march 2025 --dry-run
+	python3 budget_parse.py $(MONTH) $(YEAR) --dry-run
 
+# Run update script in replace mode
 replace:
-	$(PYTHON) budget_parse.py march 2025 --replace
+	python3 budget_parse.py $(MONTH) $(YEAR) --replace
 
+# Edit vendor map with optional category config
 edit:
 	@if [ -n "$(CAT)" ]; then \
 		echo "Using custom categories: $(CAT)"; \
-		$(PYTHON) budget_edit.py --cat-config=$(CAT); \
+		python3 budget_edit.py --cat-config=$(CAT); \
 	else \
 		echo "Using default categories"; \
-		$(PYTHON) budget_edit.py; \
+		python3 budget_edit.py; \
 	fi
-
-clean:
-	rm -rf $(VENV_DIR)
