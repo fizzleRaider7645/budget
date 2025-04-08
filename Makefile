@@ -1,24 +1,40 @@
-.PHONY: help parse dry-run edit clean
+VENV_DIR=budget-env
+PYTHON=$(VENV_DIR)/bin/python3
+PIP=$(VENV_DIR)/bin/pip
 
-PYTHON := python3
-SCRIPT := budget_parse.py
-EDITOR := budget_edit.py
+.PHONY: help init run dry-run replace edit clean
 
 help:
-	@echo "Usage:"
-	@echo "  make parse MONTH=month YEAR=year        - Parse and sync data for a given month"
-	@echo "  make dry-run MONTH=month YEAR=year      - Run the parser in dry-run mode (no write)"
-	@echo "  make edit                               - Edit vendor map (category/type)"
-	@echo "  make clean                              - Remove __pycache__ and temp files"
+	@echo "Available targets:"
+	@echo "  init        Set up virtual environment and install dependencies"
+	@echo "  run         Run budget_parse with default arguments (edit script manually)"
+	@echo "  dry-run     Run budget_parse in dry-run mode (edit date in target)"
+	@echo "  replace     Run budget_parse with --replace (edit date in target)"
+	@echo "  edit        Edit the vendor_map.json (optionally add CAT=your_config.json)"
+	@echo "  clean       Remove the virtual environment"
 
-parse:
-	$(PYTHON) $(SCRIPT) $(MONTH) $(YEAR) --replace
+init:
+	python3 -m venv $(VENV_DIR)
+	$(PIP) install --upgrade pip
+	$(PIP) install -r requirements.txt
+
+run:
+	$(PYTHON) budget_parse.py march 2025
 
 dry-run:
-	$(PYTHON) $(SCRIPT) $(MONTH) $(YEAR) --dry-run
+	$(PYTHON) budget_parse.py march 2025 --dry-run
+
+replace:
+	$(PYTHON) budget_parse.py march 2025 --replace
 
 edit:
-	$(PYTHON) $(EDITOR)
+	@if [ -n "$(CAT)" ]; then \
+		echo "Using custom categories: $(CAT)"; \
+		$(PYTHON) budget_edit.py --cat-config=$(CAT); \
+	else \
+		echo "Using default categories"; \
+		$(PYTHON) budget_edit.py; \
+	fi
 
 clean:
-	find . -name '__pycache__' -type d -exec rm -r {} +
+	rm -rf $(VENV_DIR)
