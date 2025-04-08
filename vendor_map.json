@@ -398,18 +398,6 @@
       "Category": "Shopping",
       "Type": "spending"
     },
-    "DD *DOORDASH DASHMART": {
-      "Original Date": "2025-04-01",
-      "Account Type": "Credit Card",
-      "Account Name": "CREDIT CARD",
-      "Account Number": 5453,
-      "Institution Name": "Chase",
-      "Name": "DD *DOORDASH DASHMART",
-      "Amount": 35.6,
-      "Description": "DD *DOORDASH DASHMART",
-      "Category": "Dining & Drinks",
-      "Type": "spending"
-    },
     "AMAZON MKTPL*BI8U84TP3": {
       "Original Date": "2025-03-06",
       "Account Type": "Credit Card",
@@ -1021,6 +1009,9 @@
       "Description": "Amazon.com*QJ9A85XT3",
       "Category": "Shopping",
       "Type": "spending"
+    },
+    "DD *DOORDASH DASHMART": {
+      "Category": "penis"
     }
   }
 }
