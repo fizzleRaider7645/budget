@@ -41,3 +41,12 @@ Documents/budget/
 
 # Output reports or Excel
 *.xlsx
+<<<<<<< Updated upstream
+=======
+
+# Archived scripts
+archive
+
+# Vendor map
+vendor_map.json
+>>>>>>> Stashed changes
