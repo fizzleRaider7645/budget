@@ -1,5 +1,6 @@
 import json
 import os
+import argparse
 
 DEFAULT_CATEGORIES = [
     "Mortgage", "Car", "Utilities", "Subscriptions", "Childcare", "Health",
@@ -22,9 +23,9 @@ def save_vendor_map(vendor_map):
         json.dump(vendor_map, f, indent=2)
     print("\n✅ vendor_map.json saved.\n")
 
-def show_category_menu():
-    print("\n📚 Default Categories:")
-    for i, cat in enumerate(DEFAULT_CATEGORIES, 1):
+def show_category_menu(categories):
+    print("\n📚 Available Categories:")
+    for i, cat in enumerate(categories, 1):
         print(f"  {i}) {cat}")
     print("")
 
@@ -33,8 +34,8 @@ def show_type_menu():
     print("  1) recurring")
     print("  2) spending\n")
 
-def edit_category(entry):
-    show_category_menu()
+def edit_category(entry, categories):
+    show_category_menu(categories)
     print("➡️  Enter a number (e.g. 5), or use 'cust_cat=YourCustomCategory'")
     print("➡️  You may also combine with type override: type=recurring/spending")
 
@@ -62,14 +63,14 @@ def edit_category(entry):
             print("⚠️  Invalid type. Use 'recurring' or 'spending'. Try again.")
             continue
 
-        if selected_num and not (1 <= selected_num <= len(DEFAULT_CATEGORIES)):
+        if selected_num and not (1 <= selected_num <= len(categories)):
             print("⚠️  Invalid number. Try again.")
             continue
 
         if custom_cat:
             entry["Category"] = custom_cat
         elif selected_num:
-            entry["Category"] = DEFAULT_CATEGORIES[selected_num - 1]
+            entry["Category"] = categories[selected_num - 1]
         else:
             print("⚠️  You must select a number or pass 'cust_cat='. Try again.")
             continue
@@ -94,7 +95,30 @@ def edit_type(entry):
         else:
             print("⚠️  Invalid type. Please enter '1', '2', 'recurring', or 'spending'.")
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cat-config", help="Optional path to custom categories JSON file")
+    return parser.parse_args()
+
+def load_custom_categories(path):
+    if not os.path.exists(path):
+        print(f"⚠️  Category config file not found: {path}. Using defaults.")
+        return DEFAULT_CATEGORIES
+    try:
+        with open(path) as f:
+            categories = json.load(f)
+        if not isinstance(categories, list) or not all(isinstance(cat, str) for cat in categories):
+            print("⚠️  Invalid category config format. Must be a list of strings. Using defaults.")
+            return DEFAULT_CATEGORIES
+        return categories
+    except Exception as e:
+        print(f"⚠️  Failed to load category config: {e}. Using defaults.")
+        return DEFAULT_CATEGORIES
+
 def main():
+    args = parse_args()
+    categories = load_custom_categories(args.cat_config) if args.cat_config else DEFAULT_CATEGORIES
+
     vendor_map = load_vendor_map()
     entries = []
 
@@ -133,7 +157,7 @@ def main():
 
         sub_choice = input("→ ").strip()
         if sub_choice == "1":
-            updated = edit_category(entry)
+            updated = edit_category(entry, categories)
         elif sub_choice == "2":
             updated = edit_type(entry)
         elif sub_choice == "3":

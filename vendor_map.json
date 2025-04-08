@@ -36,18 +36,6 @@
       "Category": "Bills & Utilities",
       "Type": "recurring"
     },
-    "MOVEMENT MTG PMT": {
-      "Original Date": "2025-04-01",
-      "Account Type": "Cash",
-      "Account Name": "360 Checking",
-      "Account Number": 8445,
-      "Institution Name": "Capital One",
-      "Name": "MOVEMENT MTG PMT",
-      "Amount": 2460.76,
-      "Description": "MOVEMENT MTG PMT",
-      "Category": "Bills & Utilities",
-      "Type": "recurring"
-    },
     "BRGHTWHL* LITTLE EXPLO": {
       "Original Date": "2025-04-01",
       "Account Type": "Credit Card",
@@ -155,6 +143,9 @@
       "Description": "PITTSBURGH WATER WEB",
       "Category": "Bills & Utilities",
       "Type": "recurring"
+    },
+    "MOVEMENT MTG PMT": {
+      "Category": "butthole"
     }
   },
   "spending": {
