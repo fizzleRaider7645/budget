@@ -1,32 +1,35 @@
-.PHONY: setup env run dry-run replace edit
+.PHONY: setup env run dry-run replace edit ensure-venv
 
-# Create and activate Python virtual environment
-setup:
-	python3 -m venv budget_env
-	source budget_env/bin/activate && pip install -r requirements.txt
+VENV_DIR := budget_env
+PYTHON := $(VENV_DIR)/bin/python
 
-env:
-	python3 -m venv budget_env
-	source budget_env/bin/activate && pip install -r requirements.txt
+ensure-venv:
+	@test -x "$(PYTHON)" || (echo "🔧 Creating virtual environment..." && python3 -m venv $(VENV_DIR) && $(PYTHON) -m pip install --upgrade pip && $(PYTHON) -m pip install -r requirements.txt)
 
-# Run full update script for given month/year
-run:
-	python3 update_budget_log.py $(MONTH) $(YEAR)
+# Create venv and install dependencies
+setup: ensure-venv
 
-# Run update script in dry-run mode
-dry-run:
-	python3 budget_parse.py $(MONTH) $(YEAR) --dry-run
+# Alias for setup
+env: setup
 
-# Run update script in replace mode
-replace:
-	python3 budget_parse.py $(MONTH) $(YEAR) --replace
+# Run the parser normally
+run: ensure-venv
+	$(PYTHON) budget_parse.py $(MONTH) $(YEAR)
 
-# Edit vendor map with optional category config
-edit:
+# Dry run without writing to Google Sheets
+dry-run: ensure-venv
+	$(PYTHON) budget_parse.py $(MONTH) $(YEAR) --dry-run
+
+# Replace existing tab in Google Sheets
+replace: ensure-venv
+	$(PYTHON) budget_parse.py $(MONTH) $(YEAR) --replace
+
+# Edit vendor map with optional category config and specific month/year
+edit: ensure-venv
 	@if [ -n "$(CAT)" ]; then \
 		echo "Using custom categories: $(CAT)"; \
-		python3 budget_edit.py --cat-config=$(CAT); \
+		$(PYTHON) budget_edit.py --month=$(MONTH) --year=$(YEAR) --cat-config=$(CAT); \
 	else \
 		echo "Using default categories"; \
-		python3 budget_edit.py; \
+		$(PYTHON) budget_edit.py --month=$(MONTH) --year=$(YEAR); \
 	fi

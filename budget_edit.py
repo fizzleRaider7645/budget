@@ -10,18 +10,21 @@ DEFAULT_CATEGORIES = [
     "Software & Tech", "Home & Garden", "Travel & Vacation"
 ]
 
-VENDOR_MAP_PATH = "vendor_map.json"
+def resolve_vendor_map_path(month=None, year=None):
+    if month and year:
+        return f"vendor_map-{month.zfill(2)}-{year}.json"
+    return "vendor_map.json"
 
-def load_vendor_map():
-    if not os.path.exists(VENDOR_MAP_PATH):
+def load_vendor_map(path):
+    if not os.path.exists(path):
         return {"recurring": {}, "spending": {}}
-    with open(VENDOR_MAP_PATH) as f:
+    with open(path) as f:
         return json.load(f)
 
-def save_vendor_map(vendor_map):
-    with open(VENDOR_MAP_PATH, "w") as f:
+def save_vendor_map(vendor_map, path):
+    with open(path, "w") as f:
         json.dump(vendor_map, f, indent=2)
-    print("\n✅ vendor_map.json saved.\n")
+    print(f"\n✅ {path} saved.\n")
 
 def show_category_menu(categories):
     print("\n📚 Available Categories:")
@@ -98,6 +101,8 @@ def edit_type(entry):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cat-config", help="Optional path to custom categories JSON file")
+    parser.add_argument("--month", help="Month of the vendor map to edit (e.g. '03')")
+    parser.add_argument("--year", help="Year of the vendor map to edit (e.g. '2025')")
     return parser.parse_args()
 
 def load_custom_categories(path):
@@ -118,8 +123,8 @@ def load_custom_categories(path):
 def main():
     args = parse_args()
     categories = load_custom_categories(args.cat_config) if args.cat_config else DEFAULT_CATEGORIES
-
-    vendor_map = load_vendor_map()
+    vendor_map_path = resolve_vendor_map_path(args.month, args.year)
+    vendor_map = load_vendor_map(vendor_map_path)
     entries = []
 
     for type_key in ["recurring", "spending"]:
@@ -173,7 +178,7 @@ def main():
             entries[index] = updated
             print(f"✅ Updated '{name}' successfully.")
 
-    save_vendor_map(vendor_map)
+    save_vendor_map(vendor_map, vendor_map_path)
 
 if __name__ == "__main__":
     main()
