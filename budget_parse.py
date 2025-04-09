@@ -4,12 +4,32 @@ import argparse
 import pandas as pd
 from dotenv import load_dotenv
 import gspread
+import calendar
 from oauth2client.service_account import ServiceAccountCredentials
 
 load_dotenv()
 
 MAP_PATH = "vendor_map.json"
 REQUIRED_COLUMNS = ["Original Date", "Name", "Amount", "Category"]
+
+def get_month_name(month):
+    """
+    Convert a numeric month or name to lowercase month name.
+    Accepts integers, zero-padded strings, or full month names.
+    """
+    try:
+        month_int = int(month)
+        if 1 <= month_int <= 12:
+            return calendar.month_name[month_int].lower()
+    except ValueError:
+        pass  # Try as name
+
+    month_str = month.lower()
+    months = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+    if month_str in months:
+        return month_str
+
+    raise ValueError("Invalid month value. Use '03' or 'march', etc.")
 
 def load_vendor_map():
     if os.path.exists(MAP_PATH):
@@ -22,8 +42,8 @@ def save_vendor_map(vendor_map):
         json.dump(vendor_map, f, indent=2)
     print(f"\n✅ vendor_map.json updated with {sum(len(v) for v in vendor_map.values())} total vendors.\n")
 
-def load_csv(section, month):
-    path = os.path.expanduser(f"~/Documents/budget/{section}/{month.lower()}.csv")
+def load_csv(section, month_name, year):
+    path = os.path.expanduser(f"~/Documents/budget/{section}/{year}/{month_name}.csv")
     if not os.path.exists(path):
         print(f"⚠️  {section.capitalize()} file not found: {path}")
         return pd.DataFrame()
@@ -32,7 +52,7 @@ def load_csv(section, month):
     missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
     if missing:
         raise ValueError(f"❌ Missing required columns in {section} CSV: {missing}")
-    df["Amount"] = df["Amount"].replace('[\$,]', '', regex=True).astype(float)
+    df["Amount"] = df["Amount"].replace(r'[\$,]', '', regex=True).astype(float)
     df["Type"] = section
     return df
 
@@ -73,7 +93,7 @@ def process_section(section, df, vendor_map):
     return rows, summary
 
 def push_to_google_sheets(month, year, all_transactions, replace=False):
-    tab_name = f"{month}-Budget-{year}"
+    tab_name = f"{month.capitalize()}-Budget-{year}"
     sheet_name = os.getenv("SPREADSHEET_NAME", "Budget_Dynamic")
     credentials_file = os.getenv("GOOGLE_CREDS_PATH", "credentials.json")
 
@@ -114,21 +134,26 @@ def push_to_google_sheets(month, year, all_transactions, replace=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Parse budget CSVs and update Google Sheet")
-    parser.add_argument("month", help="Month to process (e.g. march)")
-    parser.add_argument("year", help="Year to process (e.g. 2025)")
+    parser.add_argument("month", help="Month to process (e.g. '03' or 'March')")
+    parser.add_argument("year", type=int, help="Year to process (e.g. 2025)")
     parser.add_argument("--replace", action="store_true", help="Replace Google Sheet tab if exists")
     parser.add_argument("--dry-run", action="store_true", help="Don't write to sheet, just print")
     args = parser.parse_args()
 
-    month = args.month.capitalize()
+    try:
+        month_name = get_month_name(args.month)
+    except ValueError as e:
+        print(f"❌ {e}")
+        return
+
     year = args.year
     replace = args.replace
     dry_run = args.dry_run
 
     vendor_map = load_vendor_map()
 
-    recurring_df = load_csv("recurring", month)
-    spending_df = load_csv("spending", month)
+    recurring_df = load_csv("recurring", month_name, year)
+    spending_df = load_csv("spending", month_name, year)
 
     recurring_rows, _ = process_section("recurring", recurring_df, vendor_map)
     spending_rows, _ = process_section("spending", spending_df, vendor_map)
@@ -139,7 +164,7 @@ def main():
     if dry_run:
         print("\n🧪 Dry run enabled — no data was pushed to Google Sheets.")
     else:
-        push_to_google_sheets(month, year, all_transactions, replace=replace)
+        push_to_google_sheets(month_name, year, all_transactions, replace=replace)
 
 if __name__ == "__main__":
     main()

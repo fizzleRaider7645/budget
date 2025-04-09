@@ -1,17 +1,5 @@
 {
   "recurring": {
-    "APPLE.COM/BILL": {
-      "Original Date": "2025-03-30",
-      "Account Type": "Credit Card",
-      "Account Name": "CREDIT CARD",
-      "Account Number": 5453,
-      "Institution Name": "Chase",
-      "Name": "APPLE.COM/BILL",
-      "Amount": 0.99,
-      "Description": "APPLE.COM/BILL",
-      "Category": "Bills & Utilities",
-      "Type": "recurring"
-    },
     "Spotify": {
       "Original Date": "2025-03-30",
       "Account Type": "Credit Card",
@@ -146,6 +134,9 @@
     },
     "MOVEMENT MTG PMT": {
       "Category": "butthole"
+    },
+    "APPLE.COM/BILL": {
+      "Category": "YourCustomCategory"
     }
   },
   "spending": {
