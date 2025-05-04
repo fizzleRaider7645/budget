@@ -1,16 +1,21 @@
-.PHONY: setup env run dry-run replace edit ensure-venv
+.PHONY: setup env run dry-run replace edit ensure-venv markets
 
 VENV_DIR := budget_env
 PYTHON := $(VENV_DIR)/bin/python
+DEPS_MARKER := $(VENV_DIR)/.deps_installed
 
+# Create virtual environment and always install dependencies
 ensure-venv:
-	@test -x "$(PYTHON)" || (echo "🔧 Creating virtual environment..." && python3 -m venv $(VENV_DIR) && $(PYTHON) -m pip install --upgrade pip && $(PYTHON) -m pip install -r requirements.txt)
-
-# Create venv and install dependencies
-setup: ensure-venv
+	@test -x "$(PYTHON)" || (echo "Creating virtual environment..." && python3 -m venv $(VENV_DIR))
+	@if [ ! -f "$(DEPS_MARKER)" ] || [ requirements.txt -nt "$(DEPS_MARKER)" ]; then \
+		echo "Installing or updating dependencies..."; \
+		$(PYTHON) -m pip install --upgrade pip && \
+		$(PYTHON) -m pip install -r requirements.txt && \
+		touch $(DEPS_MARKER); \
+	fi
 
 # Alias for setup
-env: setup
+setup: ensure-venv
 
 # Run the parser normally
 run: ensure-venv
@@ -28,8 +33,12 @@ replace: ensure-venv
 edit: ensure-venv
 	@if [ -n "$(CAT)" ]; then \
 		echo "Using custom categories: $(CAT)"; \
-		$(PYTHON) budget_edit.py --month=$(MONTH) --year=$(YEAR) --cat-config=$(CAT); \
+		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR) --cat-config=$(CAT); \
 	else \
 		echo "Using default categories"; \
-		$(PYTHON) budget_edit.py --month=$(MONTH) --year=$(YEAR); \
+		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
+
+# Run markets.py standalone to show spot prices
+markets: ensure-venv
+	$(PYTHON) markets.py
