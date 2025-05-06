@@ -164,31 +164,6 @@ You can override these in `budget_edit.py`.
 
 ---
 
-# 🧾 Budget Logger + Coin Valuation
-
-A CLI-based budgeting and coin valuation toolkit that:
-
-- Parses recurring/spending CSV exports (e.g. from Rocket Money) into clean categories
-- Logs them to a structured Google Sheet by month/year
-- Evaluates gold and silver coins against spot price and custom profile-based premiums
-
----
-
-## ✨ Features
-
-### 💰 Budgeting
-
-- Parses **recurring** and **spending** CSVs
-- Logs data to **Google Sheets** dynamically using the API
-- Supports:
-  - ✅ `--dry-run`: preview without writing
-  - ✅ `--replace`: overwrite existing tab
-  - ✅ Custom category overrides during interactive edit
-  - ✅ `.env` config and CLI overrides
-  - ✅ Optional custom category config for editing session
-- Automatically creates month/year log tabs like `March-Budget-25_Log`
-- Interactive `budget_edit.py` to modify vendor category/type
-
 ### 🪙 Coin Valuation
 
 - Pulls **live gold/silver spot prices** using GoldAPI
@@ -242,21 +217,6 @@ GOOGLE_CREDS_PATH=/path/to/your/credentials.json
 SPREADSHEET_NAME=Budget_Dynamic
 GOLDAPI_KEY=your_goldapi_key_here
 ```
-
----
-
-## ▶️ Budget Usage
-
-```bash
-make run MONTH=march YEAR=2025
-```
-
-| Command        | Description                                         |
-| -------------- | --------------------------------------------------- |
-| `make run`     | Run the parser                                      |
-| `make dry-run` | Preview parsed values (no write to sheet)           |
-| `make replace` | Wipe tab content and re-write clean data            |
-| `make edit`    | Launch `budget_edit.py` to update vendor categories |
 
 ---
 
