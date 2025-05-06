@@ -1,4 +1,4 @@
-.PHONY: setup env run dry-run replace edit ensure-venv markets
+.PHONY: setup env run dry-run replace edit ensure-venv gold-api
 
 VENV_DIR := budget_env
 PYTHON := $(VENV_DIR)/bin/python
@@ -39,6 +39,7 @@ edit: ensure-venv
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
 
-# Run markets.py standalone to show spot prices
-markets: ensure-venv
-	$(PYTHON) markets.py
+# Run gold_api.py standalone to show spot prices
+gold-api: ensure-venv
+	$(PYTHON) gold_api.py
+
