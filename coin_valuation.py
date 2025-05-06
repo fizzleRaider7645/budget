@@ -18,17 +18,20 @@ print("📄 Loading premium_profiles.json...")
 with open("premium_profiles.json") as f:
     PROFILE_DATA = json.load(f)
 
-# --- Load or create user profile ---
-def load_user_profile(profile_path):
-    if os.path.exists(profile_path):
-        with open(profile_path) as f:
-            return json.load(f)
-    else:
-        return {"default_profile": PROFILE_DATA["default_profile"]}
+# --- Helper functions for profile management ---
+def get_default_profile():
+    return PROFILE_DATA.get("default_profile", "stacker")
 
-def save_user_profile(profile_path, profile):
-    with open(profile_path, "w") as f:
-        json.dump({"default_profile": profile}, f)
+def set_default_profile(profile):
+    PROFILE_DATA["default_profile"] = profile
+    with open("premium_profiles.json", "w") as f:
+        json.dump(PROFILE_DATA, f, indent=2)
+
+def edit_premium_profile(profile_name, category_premiums):
+    PROFILE_DATA["profiles"][profile_name] = category_premiums
+    with open("premium_profiles.json", "w") as f:
+        json.dump(PROFILE_DATA, f, indent=2)
+    print(Fore.GREEN + f"✅ Profile '{profile_name}' added/updated successfully.")
 
 def get_spot_for_coin(coin, spot_prices):
     return spot_prices["gold"] if coin["type"] == "gold" else spot_prices["silver"]
@@ -52,12 +55,11 @@ def display_result(result):
         print(color + Style.BRIGHT + f"Status:           {status}")
     print()
 
-def calculate_values(coin_key, spot_prices, actual_price=None, profile_override=None, paid_flag=False, profile_path="user_profile.json"):
+def calculate_values(coin_key, spot_prices, actual_price=None, profile_override=None, paid_flag=False):
     if coin_key not in COIN_SPEC:
         return {"error": f"Coin '{coin_key}' not found in spec."}
 
-    user_profile = load_user_profile(profile_path)
-    profile = profile_override or user_profile["default_profile"]
+    profile = profile_override or get_default_profile()
     coin = COIN_SPEC[coin_key]
     category = coin["category"]
 
@@ -90,31 +92,40 @@ def calculate_values(coin_key, spot_prices, actual_price=None, profile_override=
 
     return result
 
-def evaluate_single(args, spot_prices, profile_path):
+def evaluate_single(args, spot_prices):
     paid = float(args.paid) if args.paid else None
     offered = float(args.price) if args.price else None
     price = paid if paid is not None else offered
     paid_flag = paid is not None
 
     if args.set_profile:
-        save_user_profile(profile_path, args.set_profile)
+        set_default_profile(args.set_profile)
         print(Fore.GREEN + f"✅ Default profile set to: {args.set_profile}")
         return
 
-    result = calculate_values(args.coin, spot_prices, actual_price=price, profile_override=args.profile, paid_flag=paid_flag, profile_path=profile_path)
+    if args.add_profile:
+        try:
+            profile_dict = json.loads(args.add_profile)
+            profile_name = profile_dict.pop("name")
+            edit_premium_profile(profile_name, profile_dict)
+        except Exception as e:
+            print(Fore.RED + f"❌ Failed to add profile: {e}")
+        return
+
+    result = calculate_values(args.coin, spot_prices, actual_price=price, profile_override=args.profile, paid_flag=paid_flag)
     if "error" in result:
         print(Fore.RED + result["error"])
     else:
         display_result(result)
 
-def evaluate_batch(args, spot_prices, profile_path):
+def evaluate_batch(args, spot_prices):
     with open(args.batch, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             coin = row["coin"]
             price = float(row["price"]) if "price" in row and row["price"] else None
-            profile = row.get("profile", args.profile or load_user_profile(profile_path)["default_profile"])
-            result = calculate_values(coin, spot_prices, actual_price=price, profile_override=profile, paid_flag=False, profile_path=profile_path)
+            profile = row.get("profile", args.profile or get_default_profile())
+            result = calculate_values(coin, spot_prices, actual_price=price, profile_override=profile, paid_flag=False)
             if "error" in result:
                 print(Fore.RED + result["error"])
             else:
@@ -127,13 +138,22 @@ def main():
     parser.add_argument("--paid", type=float, help="Price actually paid (takes precedence over --price)")
     parser.add_argument("--profile", help="Override buyer profile for this run")
     parser.add_argument("--set-profile", help="Set default buyer profile for future runs")
+    parser.add_argument("--add-profile", help="Add or update a premium profile (pass JSON string with name and category keys)")
     parser.add_argument("--batch", help="CSV file with columns: coin,price,profile")
-    parser.add_argument("--profile-path", default=os.getenv("PROFILE_PATH", "user_profile.json"), help="Path to the user profile JSON file")
     args = parser.parse_args()
 
     if args.set_profile:
-        save_user_profile(args.profile_path, args.set_profile)
+        set_default_profile(args.set_profile)
         print(Fore.GREEN + f"✅ Default profile set to: {args.set_profile}")
+        return
+
+    if args.add_profile:
+        try:
+            profile_dict = json.loads(args.add_profile)
+            profile_name = profile_dict.pop("name")
+            edit_premium_profile(profile_name, profile_dict)
+        except Exception as e:
+            print(Fore.RED + f"❌ Failed to add profile: {e}")
         return
 
     if not args.coin and not args.batch:
@@ -142,9 +162,9 @@ def main():
     spot_prices = get_spot_prices()
 
     if args.batch:
-        evaluate_batch(args, spot_prices, args.profile_path)
+        evaluate_batch(args, spot_prices)
     elif args.coin:
-        evaluate_single(args, spot_prices, args.profile_path)
+        evaluate_single(args, spot_prices)
 
 if __name__ == "__main__":
     main()
