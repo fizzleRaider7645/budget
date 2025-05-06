@@ -164,6 +164,179 @@ You can override these in `budget_edit.py`.
 
 ---
 
+# 🧾 Budget Logger + Coin Valuation
+
+A CLI-based budgeting and coin valuation toolkit that:
+
+- Parses recurring/spending CSV exports (e.g. from Rocket Money) into clean categories
+- Logs them to a structured Google Sheet by month/year
+- Evaluates gold and silver coins against spot price and custom profile-based premiums
+
+---
+
+## ✨ Features
+
+### 💰 Budgeting
+
+- Parses **recurring** and **spending** CSVs
+- Logs data to **Google Sheets** dynamically using the API
+- Supports:
+  - ✅ `--dry-run`: preview without writing
+  - ✅ `--replace`: overwrite existing tab
+  - ✅ Custom category overrides during interactive edit
+  - ✅ `.env` config and CLI overrides
+  - ✅ Optional custom category config for editing session
+- Automatically creates month/year log tabs like `March-Budget-25_Log`
+- Interactive `budget_edit.py` to modify vendor category/type
+
+### 🪙 Coin Valuation
+
+- Pulls **live gold/silver spot prices** using GoldAPI
+- Evaluates melt value and premiums of any coin in `coin_spec.json`
+- Supports one-off or batch valuation via CSV
+- Supports price offered vs. price paid, with clear buy verdict
+- Custom buyer **profiles** like `stacker`, `collector`, `investor`
+- Fully editable `premium_profiles.json` with premium % per category
+- Supports:
+  - ✅ `--coin` (e.g. `peace_dollar`)
+  - ✅ `--price` and/or `--paid`
+  - ✅ `--profile` or persistent default
+  - ✅ `--set-profile` to persist default
+  - ✅ `--add-profile` to define new buyer profiles
+  - ✅ `--profiles-path` for managing multiple profile sets
+
+---
+
+## 📁 File Structure
+
+```
+~/Documents/budget/
+├── recurring/
+│   └── march.csv
+├── spending/
+│   └── march.csv
+vendor_map.json
+premium_profiles.json
+coin_spec.json
+.env
+budget_parse.py
+budget_edit.py
+coin_valuation.py
+gold_api.py
+requirements.txt
+Makefile
+```
+
+---
+
+## ⚙️ Setup
+
+```bash
+make setup
+```
+
+Create `.env` with:
+
+```env
+GOOGLE_CREDS_PATH=/path/to/your/credentials.json
+SPREADSHEET_NAME=Budget_Dynamic
+GOLDAPI_KEY=your_goldapi_key_here
+```
+
+---
+
+## ▶️ Budget Usage
+
+```bash
+make run MONTH=march YEAR=2025
+```
+
+| Command        | Description                                         |
+| -------------- | --------------------------------------------------- |
+| `make run`     | Run the parser                                      |
+| `make dry-run` | Preview parsed values (no write to sheet)           |
+| `make replace` | Wipe tab content and re-write clean data            |
+| `make edit`    | Launch `budget_edit.py` to update vendor categories |
+
+---
+
+## 🪙 Coin Valuation Usage
+
+Evaluate one coin:
+
+```bash
+make coin-valuation coin=peace_dollar price=30.25
+```
+
+With price paid:
+
+```bash
+make coin-valuation coin=peace_dollar paid=29.00
+```
+
+Override profile:
+
+```bash
+make coin-valuation coin=peace_dollar price=30.25 profile=collector
+```
+
+Set default profile:
+
+```bash
+make set-profile name=investor
+```
+
+Add new profile:
+
+```bash
+make add-profile json='{"name": "reseller", "junk": 0.12, "bullion": 0.06, "sovereign": 0.08}'
+```
+
+Batch evaluate (CSV must have columns: `coin,price,profile`):
+
+```bash
+make coin-valuation-batch file=coins.csv
+```
+
+Use custom profile path:
+
+```bash
+PREMIUM_PROFILE_PATH=my_profiles.json make coin-valuation coin=peace_dollar price=30.25
+```
+
+---
+
+## 📊 Budget Output Example
+
+| Timestamp           | Month | Year | Name         | Amount | Category  | Type     |
+| ------------------- | ----- | ---- | ------------ | ------ | --------- | -------- |
+| 2025-04-06 15:25:00 | March | 2025 | Trader Joe's | 76.53  | Groceries | spending |
+
+---
+
+## 🪙 Coin Valuation Example
+
+```bash
+make coin-valuation coin=peace_dollar price=30.25
+```
+
+Outputs:
+
+```
+🔍 Coin: Peace Dollar (Silver, Junk)
+Spot Price:       $33.05
+Melt Value:       $25.56
+Allowed Premium:  10.00%
+Max Allowed:      $28.12
+Profile:          stacker
+Offered Price:    $30.25
+Premium ($):      $4.69
+Premium (%):      18.35%
+Status:           ❌ Too Expensive
+```
+
+---
+
 ## 🙌 License & Credits
 
-Built with ❤️ by [You], powered by Python + gspread + pandas.
+Built with ❤️ by [You], powered by Python, gspread, pandas, and GoldAPI.
