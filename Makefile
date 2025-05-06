@@ -1,4 +1,4 @@
-.PHONY: setup env run dry-run replace edit ensure-venv gold-api
+.PHONY: setup env run dry-run replace edit ensure-venv gold-api coin-valuation coin-valuation-batch
 
 VENV_DIR := budget_env
 PYTHON := $(VENV_DIR)/bin/python
@@ -39,7 +39,7 @@ edit: ensure-venv
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
 
-# Run gold_api.py with options
+# Gold API utility targets
 gold-api: ensure-venv
 	$(PYTHON) gold_api.py
 
@@ -55,4 +55,28 @@ gold-api-cache: ensure-venv
 gold-api-cache-json: ensure-venv
 	$(PYTHON) gold_api.py --from-cache --json
 
+gold-api-diff: ensure-venv
+	$(PYTHON) gold_api.py --diff
 
+gold-api-json-diff: ensure-venv
+	$(PYTHON) gold_api.py --json --diff
+
+# Spot shortcut
+spot: ensure-venv
+	$(PYTHON) gold_api.py --json
+
+# Run single-coin valuation (paid is optional)
+coin-valuation: ensure-venv
+	@if [ -n "$(paid)" ] && [ -n "$(price)" ]; then \
+		$(PYTHON) coin_valuation.py --coin $(coin) --price $(price) --paid $(paid) --profile $(profile); \
+	elif [ -n "$(paid)" ]; then \
+		$(PYTHON) coin_valuation.py --coin $(coin) --paid $(paid) --profile $(profile); \
+	elif [ -n "$(price)" ]; then \
+		$(PYTHON) coin_valuation.py --coin $(coin) --price $(price) --profile $(profile); \
+	else \
+		echo "❌ Must specify either price= or paid="; exit 1; \
+	fi
+
+# Run batch valuation (CSV must have coin,price[,profile])
+coin-valuation-batch: ensure-venv
+	$(PYTHON) coin_valuation.py --batch $(file)

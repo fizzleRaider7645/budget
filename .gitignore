@@ -43,3 +43,6 @@ Documents/budget/
 
 # Archived scripts
 archive
+
+# Spot cache
+.cache

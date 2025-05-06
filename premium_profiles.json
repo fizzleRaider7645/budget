@@ -1,0 +1,20 @@
+{
+  "default_profile": "stacker",
+  "profiles": {
+    "stacker": {
+      "bullion": 0.04,
+      "sovereign": 0.08,
+      "junk": 0.1
+    },
+    "collector": {
+      "bullion": 0.1,
+      "sovereign": 0.2,
+      "junk": 0.25
+    },
+    "investor": {
+      "bullion": 0.06,
+      "sovereign": 0.1,
+      "junk": 0.12
+    }
+  }
+}
