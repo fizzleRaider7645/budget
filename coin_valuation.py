@@ -13,9 +13,21 @@ print("📄 Loading coin_spec.json...")
 with open("coin_spec.json") as f:
     COIN_SPEC = json.load(f)
 
-# --- Load premium profiles ---
-print("📄 Loading premium_profiles.json...")
-with open("premium_profiles.json") as f:
+# --- Argument parsing (to get profile path early) ---
+parser = argparse.ArgumentParser(description="Evaluate coin melt value and premiums.")
+parser.add_argument("--coin", help="Coin key from coin_spec.json")
+parser.add_argument("--price", type=float, help="Offered price for comparison")
+parser.add_argument("--paid", type=float, help="Price actually paid (takes precedence over --price)")
+parser.add_argument("--profile", help="Override buyer profile for this run")
+parser.add_argument("--set-profile", help="Set default buyer profile for future runs")
+parser.add_argument("--add-profile", help="Add or update a premium profile (pass JSON string with name and category keys)")
+parser.add_argument("--batch", help="CSV file with columns: coin,price,profile")
+parser.add_argument("--profiles-path", default=os.getenv("PREMIUM_PROFILE_PATH", "premium_profiles.json"), help="Path to premium_profiles.json")
+args = parser.parse_args()
+
+# --- Load premium profiles from path ---
+print(f"📄 Loading {args.profiles_path}...")
+with open(args.profiles_path) as f:
     PROFILE_DATA = json.load(f)
 
 # --- Helper functions for profile management ---
@@ -24,12 +36,12 @@ def get_default_profile():
 
 def set_default_profile(profile):
     PROFILE_DATA["default_profile"] = profile
-    with open("premium_profiles.json", "w") as f:
+    with open(args.profiles_path, "w") as f:
         json.dump(PROFILE_DATA, f, indent=2)
 
 def edit_premium_profile(profile_name, category_premiums):
     PROFILE_DATA["profiles"][profile_name] = category_premiums
-    with open("premium_profiles.json", "w") as f:
+    with open(args.profiles_path, "w") as f:
         json.dump(PROFILE_DATA, f, indent=2)
     print(Fore.GREEN + f"✅ Profile '{profile_name}' added/updated successfully.")
 
@@ -131,40 +143,22 @@ def evaluate_batch(args, spot_prices):
             else:
                 display_result(result)
 
-def main():
-    parser = argparse.ArgumentParser(description="Evaluate coin melt value and premiums.")
-    parser.add_argument("--coin", help="Coin key from coin_spec.json")
-    parser.add_argument("--price", type=float, help="Offered price for comparison")
-    parser.add_argument("--paid", type=float, help="Price actually paid (takes precedence over --price)")
-    parser.add_argument("--profile", help="Override buyer profile for this run")
-    parser.add_argument("--set-profile", help="Set default buyer profile for future runs")
-    parser.add_argument("--add-profile", help="Add or update a premium profile (pass JSON string with name and category keys)")
-    parser.add_argument("--batch", help="CSV file with columns: coin,price,profile")
-    args = parser.parse_args()
-
+if __name__ == "__main__":
     if args.set_profile:
         set_default_profile(args.set_profile)
         print(Fore.GREEN + f"✅ Default profile set to: {args.set_profile}")
-        return
-
-    if args.add_profile:
+    elif args.add_profile:
         try:
             profile_dict = json.loads(args.add_profile)
             profile_name = profile_dict.pop("name")
             edit_premium_profile(profile_name, profile_dict)
         except Exception as e:
             print(Fore.RED + f"❌ Failed to add profile: {e}")
-        return
-
-    if not args.coin and not args.batch:
-        parser.error("❌ Must provide either --coin or --batch")
-
-    spot_prices = get_spot_prices()
-
-    if args.batch:
+    elif args.batch:
+        spot_prices = get_spot_prices()
         evaluate_batch(args, spot_prices)
     elif args.coin:
+        spot_prices = get_spot_prices()
         evaluate_single(args, spot_prices)
-
-if __name__ == "__main__":
-    main()
+    else:
+        print(Fore.RED + "❌ Must provide either --coin or --batch or one of the management flags.")

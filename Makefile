@@ -45,6 +45,11 @@ add-profile: ensure-venv
 	@if [ -z "$(json)" ]; then echo "❌ Must provide a json='{...}' string"; exit 1; fi; \
 	$(PYTHON) coin_valuation.py --add-profile '$(json)
 
+# Add or update a profile via JSON string
+add-profile: ensure-venv
+	@if [ -z "$(json)" ]; then echo "❌ Must provide a json='{...}' string"; exit 1; fi; \
+	$(PYTHON) coin_valuation.py --add-profile '$(json)'
+
 coin-valuation: ensure-venv
 	@if [ -z "$(coin)" ]; then echo "❌ Must set coin="; exit 1; fi; \
 	CMD="$(PYTHON) coin_valuation.py --coin $(coin)"; \
