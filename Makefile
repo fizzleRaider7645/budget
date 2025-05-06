@@ -39,7 +39,20 @@ edit: ensure-venv
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
 
-# Run gold_api.py standalone to show spot prices
+# Run gold_api.py with options
 gold-api: ensure-venv
 	$(PYTHON) gold_api.py
+
+gold-api-dry: ensure-venv
+	$(PYTHON) gold_api.py --dry-run
+
+gold-api-json: ensure-venv
+	$(PYTHON) gold_api.py --json
+
+gold-api-cache: ensure-venv
+	$(PYTHON) gold_api.py --from-cache
+
+gold-api-cache-json: ensure-venv
+	$(PYTHON) gold_api.py --from-cache --json
+
 

@@ -1,0 +1,299 @@
+{
+  "american_gold_eagle_1oz": {
+    "type": "gold",
+    "country": "USA",
+    "denomination": "50 USD",
+    "weight_oz": 1.0909,
+    "purity": 0.9167,
+    "metal_content_oz": 1.0,
+    "nicknames": ["AGE"],
+    "category": "sovereign"
+  },
+  "american_silver_eagle_1oz": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "1 USD",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "nicknames": ["ASE"],
+    "category": "sovereign"
+  },
+  "morgan_dollar": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "1 USD",
+    "weight_oz": 0.859,
+    "purity": 0.9,
+    "metal_content_oz": 0.7734,
+    "year_range": "1878\u20131921",
+    "category": "junk"
+  },
+  "peace_dollar": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "1 USD",
+    "weight_oz": 0.859,
+    "purity": 0.9,
+    "metal_content_oz": 0.7734,
+    "year_range": "1921\u20131935",
+    "category": "junk"
+  },
+  "kennedy_half_dollar_1964": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.50 USD",
+    "weight_oz": 0.4019,
+    "purity": 0.9,
+    "metal_content_oz": 0.3617,
+    "category": "junk"
+  },
+  "kennedy_half_dollar_40": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.50 USD",
+    "weight_oz": 0.369,
+    "purity": 0.4,
+    "metal_content_oz": 0.1479,
+    "year_range": "1965\u20131970",
+    "category": "junk"
+  },
+  "franklin_half_dollar": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.50 USD",
+    "weight_oz": 0.4019,
+    "purity": 0.9,
+    "metal_content_oz": 0.3617,
+    "year_range": "1948\u20131963",
+    "category": "junk"
+  },
+  "walking_liberty_half_dollar": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.50 USD",
+    "weight_oz": 0.4019,
+    "purity": 0.9,
+    "metal_content_oz": 0.3617,
+    "year_range": "1916\u20131947",
+    "category": "junk"
+  },
+  "washington_quarter_pre1965": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.25 USD",
+    "weight_oz": 0.2009,
+    "purity": 0.9,
+    "metal_content_oz": 0.1808,
+    "year_range": "1932\u20131964",
+    "category": "junk"
+  },
+  "mercury_dime": {
+    "type": "silver",
+    "country": "USA",
+    "denomination": "0.10 USD",
+    "weight_oz": 0.0804,
+    "purity": 0.9,
+    "metal_content_oz": 0.0723,
+    "year_range": "1916\u20131945",
+    "category": "junk"
+  },
+  "canadian_gold_maple_leaf_1oz": {
+    "type": "gold",
+    "country": "Canada",
+    "denomination": "50 CAD",
+    "weight_oz": 1.0,
+    "purity": 0.9999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "canadian_silver_maple_leaf_1oz": {
+    "type": "silver",
+    "country": "Canada",
+    "denomination": "5 CAD",
+    "weight_oz": 1.0,
+    "purity": 0.9999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "krugerrand_gold_1oz": {
+    "type": "gold",
+    "country": "South Africa",
+    "denomination": "None",
+    "weight_oz": 1.0909,
+    "purity": 0.9167,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "krugerrand_silver_1oz": {
+    "type": "silver",
+    "country": "South Africa",
+    "denomination": "1 Rand",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "britannia_gold_1oz": {
+    "type": "gold",
+    "country": "UK",
+    "denomination": "100 GBP",
+    "weight_oz": 1.0,
+    "purity": 0.9999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "britannia_silver_1oz": {
+    "type": "silver",
+    "country": "UK",
+    "denomination": "2 GBP",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "philharmonic_gold_1oz": {
+    "type": "gold",
+    "country": "Austria",
+    "denomination": "100 EUR",
+    "weight_oz": 1.0,
+    "purity": 0.9999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "philharmonic_silver_1oz": {
+    "type": "silver",
+    "country": "Austria",
+    "denomination": "1.5 EUR",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "noahs_ark_silver_1oz": {
+    "type": "silver",
+    "country": "Armenia",
+    "denomination": "500 Dram",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "category": "sovereign"
+  },
+  "american_gold_eagle_half_oz": {
+    "type": "gold",
+    "country": "USA",
+    "denomination": "25 USD",
+    "weight_oz": 0.5455,
+    "purity": 0.9167,
+    "metal_content_oz": 0.5,
+    "category": "sovereign"
+  },
+  "american_gold_eagle_quarter_oz": {
+    "type": "gold",
+    "country": "USA",
+    "denomination": "10 USD",
+    "weight_oz": 0.2727,
+    "purity": 0.9167,
+    "metal_content_oz": 0.25,
+    "category": "sovereign"
+  },
+  "american_gold_eagle_tenth_oz": {
+    "type": "gold",
+    "country": "USA",
+    "denomination": "5 USD",
+    "weight_oz": 0.1091,
+    "purity": 0.9167,
+    "metal_content_oz": 0.1,
+    "category": "sovereign"
+  },
+  "canadian_gold_maple_leaf_half_oz": {
+    "type": "gold",
+    "country": "Canada",
+    "denomination": "20 CAD",
+    "weight_oz": 0.5,
+    "purity": 0.9999,
+    "metal_content_oz": 0.5,
+    "category": "sovereign"
+  },
+  "canadian_gold_maple_leaf_quarter_oz": {
+    "type": "gold",
+    "country": "Canada",
+    "denomination": "10 CAD",
+    "weight_oz": 0.25,
+    "purity": 0.9999,
+    "metal_content_oz": 0.25,
+    "category": "sovereign"
+  },
+  "canadian_gold_maple_leaf_tenth_oz": {
+    "type": "gold",
+    "country": "Canada",
+    "denomination": "5 CAD",
+    "weight_oz": 0.1,
+    "purity": 0.9999,
+    "metal_content_oz": 0.1,
+    "category": "sovereign"
+  },
+  "generic_silver_round_1oz": {
+    "type": "silver",
+    "country": "Private Mint",
+    "denomination": "None",
+    "weight_oz": 1.0,
+    "purity": 0.999,
+    "metal_content_oz": 1.0,
+    "category": "bullion"
+  },
+  "silver_bar_5oz": {
+    "type": "silver",
+    "country": "Private Mint",
+    "denomination": "None",
+    "weight_oz": 5.0,
+    "purity": 0.999,
+    "metal_content_oz": 5.0,
+    "category": "bullion"
+  },
+  "silver_bar_10oz": {
+    "type": "silver",
+    "country": "Private Mint",
+    "denomination": "None",
+    "weight_oz": 10.0,
+    "purity": 0.999,
+    "metal_content_oz": 10.0,
+    "category": "bullion"
+  },
+  "silver_bar_100oz": {
+    "type": "silver",
+    "country": "Private Mint",
+    "denomination": "None",
+    "weight_oz": 100.0,
+    "purity": 0.999,
+    "metal_content_oz": 100.0,
+    "category": "bullion"
+  },
+  "gold_bar_1g": {
+    "type": "gold",
+    "country": "Various",
+    "denomination": "None",
+    "weight_oz": 0.03215,
+    "purity": 0.9999,
+    "metal_content_oz": 0.03215,
+    "category": "bullion"
+  },
+  "gold_bar_5g": {
+    "type": "gold",
+    "country": "Various",
+    "denomination": "None",
+    "weight_oz": 0.16075,
+    "purity": 0.9999,
+    "metal_content_oz": 0.16075,
+    "category": "bullion"
+  },
+  "gold_bar_10g": {
+    "type": "gold",
+    "country": "Various",
+    "denomination": "None",
+    "weight_oz": 0.3215,
+    "purity": 0.9999,
+    "metal_content_oz": 0.3215,
+    "category": "bullion"
+  }
+}
