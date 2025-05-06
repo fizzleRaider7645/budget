@@ -4,7 +4,7 @@ VENV_DIR := budget_env
 PYTHON := $(VENV_DIR)/bin/python
 DEPS_MARKER := $(VENV_DIR)/.deps_installed
 
-# Create virtual environment and always install dependencies
+# Create virtual environment and install dependencies
 ensure-venv:
 	@test -x "$(PYTHON)" || (echo "Creating virtual environment..." && python3 -m venv $(VENV_DIR))
 	@if [ ! -f "$(DEPS_MARKER)" ] || [ requirements.txt -nt "$(DEPS_MARKER)" ]; then \
@@ -14,22 +14,17 @@ ensure-venv:
 		touch $(DEPS_MARKER); \
 	fi
 
-# Alias for setup
 setup: ensure-venv
 
-# Run the parser normally
 run: ensure-venv
 	$(PYTHON) budget_parse.py $(MONTH) $(YEAR)
 
-# Dry run without writing to Google Sheets
 dry-run: ensure-venv
 	$(PYTHON) budget_parse.py $(MONTH) $(YEAR) --dry-run
 
-# Replace existing tab in Google Sheets
 replace: ensure-venv
 	$(PYTHON) budget_parse.py $(MONTH) $(YEAR) --replace
 
-# Edit vendor map with optional category config and specific month/year
 edit: ensure-venv
 	@if [ -n "$(CAT)" ]; then \
 		echo "Using custom categories: $(CAT)"; \
@@ -39,7 +34,7 @@ edit: ensure-venv
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
 
-# Gold API utility targets
+# --- Gold API targets ---
 gold-api: ensure-venv
 	$(PYTHON) gold_api.py
 
@@ -61,22 +56,27 @@ gold-api-diff: ensure-venv
 gold-api-json-diff: ensure-venv
 	$(PYTHON) gold_api.py --json --diff
 
-# Spot shortcut
 spot: ensure-venv
 	$(PYTHON) gold_api.py --json
 
-# Run single-coin valuation (paid is optional)
+# --- Coin Valuation (single + set-profile) ---
 coin-valuation: ensure-venv
-	@if [ -n "$(paid)" ] && [ -n "$(price)" ]; then \
-		$(PYTHON) coin_valuation.py --coin $(coin) --price $(price) --paid $(paid) --profile $(profile); \
-	elif [ -n "$(paid)" ]; then \
-		$(PYTHON) coin_valuation.py --coin $(coin) --paid $(paid) --profile $(profile); \
-	elif [ -n "$(price)" ]; then \
-		$(PYTHON) coin_valuation.py --coin $(coin) --price $(price) --profile $(profile); \
+	@if [ -n "$(profile_path)" ]; then PROFILE_PATH_ARG="--profile-path $(profile_path)"; else PROFILE_PATH_ARG=""; fi; \
+	if [ -n "$(set-profile)" ]; then \
+		echo "📝 Setting default profile..."; \
+		$(PYTHON) coin_valuation.py --set-profile $(set-profile) $$PROFILE_PATH_ARG; \
+	elif [ -n "$(coin)" ]; then \
+		CMD="$(PYTHON) coin_valuation.py --coin $(coin)"; \
+		if [ -n "$(price)" ]; then CMD="$$CMD --price $(price)"; fi; \
+		if [ -n "$(paid)" ]; then CMD="$$CMD --paid $(paid)"; fi; \
+		if [ -n "$(profile)" ]; then CMD="$$CMD --profile $(profile)"; fi; \
+		CMD="$$CMD $$PROFILE_PATH_ARG"; \
+		echo "📈 Running: $$CMD"; eval $$CMD; \
 	else \
-		echo "❌ Must specify either price= or paid="; exit 1; \
+		echo "❌ Must provide either set-profile= or coin="; exit 1; \
 	fi
 
-# Run batch valuation (CSV must have coin,price[,profile])
+# --- Coin Valuation (batch mode) ---
 coin-valuation-batch: ensure-venv
-	$(PYTHON) coin_valuation.py --batch $(file)
+	@if [ -n "$(profile_path)" ]; then PROFILE_PATH_ARG="--profile-path $(profile_path)"; else PROFILE_PATH_ARG=""; fi; \
+	$(PYTHON) coin_valuation.py --batch $(file) $$PROFILE_PATH_ARG
