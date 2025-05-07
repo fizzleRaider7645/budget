@@ -217,8 +217,6 @@ make setup
 Create `.env` with:
 
 ```env
-GOOGLE_CREDS_PATH=/path/to/your/credentials.json
-SPREADSHEET_NAME=Budget_Dynamic
 GOLDAPI_KEY=your_goldapi_key_here
 ```
 
