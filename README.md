@@ -1,6 +1,10 @@
-# 🧾 Budget Logger
+# 🧾 Budget Logger + Coin Valuation
 
-A CLI-based personal budgeting tool that parses recurring and spending CSV exports (e.g. from Rocket Money), categorizes them, and logs the data to a structured Google Sheets "Budget Log" tab by month and year.
+A CLI-based budgeting and coin valuation toolkit that:
+
+- Parses recurring/spending CSV exports (e.g. from Rocket Money) into clean categories
+- Logs them to a structured Google Sheet by month/year
+- Evaluates gold and silver coins against spot price and custom profile-based premiums
 
 ---
 
