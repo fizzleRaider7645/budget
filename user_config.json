@@ -1,0 +1,12 @@
+{
+  "default_profile": "stacker",
+  "profile_path": "premium_profiles.json",
+  "user_profile_path": "user_profile.json",
+  "preferred_currency": "USD",
+  "notify_threshold_pct": 0.05,
+  "track_gold_silver_ratio": true,
+  "gsr_alerts": {
+    "silver_to_gold": 55,
+    "gold_to_silver": 85
+  }
+}

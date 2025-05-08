@@ -1,0 +1,19 @@
+[
+  {
+    "id": "804688ba-cd95-411b-934a-81ab5558d872",
+    "coin": "peace_dollar",
+    "type": "silver",
+    "category": "junk",
+    "price_paid": 32.0,
+    "quantity": 2,
+    "condition": "AU",
+    "source": "eBay",
+    "date": "2025-05-06",
+    "spot_price": 32.63,
+    "melt_value": 25.25,
+    "premium_dollar": 6.75,
+    "premium_pct": 0.2671,
+    "notes": "Adjusted premium",
+    "spot_price_at_purchase": 32.65
+  }
+]

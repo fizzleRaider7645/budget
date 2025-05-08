@@ -1,5 +1,4 @@
 {
-  "default_profile": "collector",
   "profiles": {
     "stacker": {
       "bullion": 0.04,

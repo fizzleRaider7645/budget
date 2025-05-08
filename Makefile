@@ -1,9 +1,10 @@
-.PHONY: setup ensure-venv run dry-run replace edit gold-api spot coin-valuation coin-valuation-batch
+.PHONY: setup env run dry-run replace edit ensure-venv gold-api coin-valuation coin-valuation-batch coin-add coin-list coin-export coin-edit
 
 VENV_DIR := budget_env
 PYTHON := $(VENV_DIR)/bin/python
 DEPS_MARKER := $(VENV_DIR)/.deps_installed
 
+# --- Environment Setup ---
 ensure-venv:
 	@test -x "$(PYTHON)" || (echo "Creating virtual environment..." && python3 -m venv $(VENV_DIR))
 	@if [ ! -f "$(DEPS_MARKER)" ] || [ requirements.txt -nt "$(DEPS_MARKER)" ]; then \
@@ -15,6 +16,7 @@ ensure-venv:
 
 setup: ensure-venv
 
+# --- Budget Parser ---
 run: ensure-venv
 	$(PYTHON) budget_parse.py $(MONTH) $(YEAR)
 
@@ -26,39 +28,55 @@ replace: ensure-venv
 
 edit: ensure-venv
 	@if [ -n "$(CAT)" ]; then \
+		echo "Using custom categories: $(CAT)"; \
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR) --cat-config=$(CAT); \
 	else \
+		echo "Using default categories"; \
 		$(PYTHON) budget_edit.py --months=$(MONTH) --years=$(YEAR); \
 	fi
 
+# --- Spot Price ---
 gold-api: ensure-venv
 	$(PYTHON) gold_api.py
 
-spot: ensure-venv
+gold-api-dry: ensure-venv
+	$(PYTHON) gold_api.py --dry-run
+
+gold-api-json: ensure-venv
 	$(PYTHON) gold_api.py --json
 
-set-profile: ensure-venv
-	@if [ -z "$(name)" ]; then echo "❌ Must set name="; exit 1; fi; \
-	$(PYTHON) coin_valuation.py --set-profile $(name)
+gold-api-cache: ensure-venv
+	$(PYTHON) gold_api.py --from-cache
 
-add-profile: ensure-venv
-	@if [ -z "$(json)" ]; then echo "❌ Must provide a json='{...}' string"; exit 1; fi; \
-	$(PYTHON) coin_valuation.py --add-profile '$(json)
+gold-api-cache-json: ensure-venv
+	$(PYTHON) gold_api.py --from-cache --json
 
-# Add or update a profile via JSON string
-add-profile: ensure-venv
-	@if [ -z "$(json)" ]; then echo "❌ Must provide a json='{...}' string"; exit 1; fi; \
-	$(PYTHON) coin_valuation.py --add-profile '$(json)'
+gold-api-diff: ensure-venv
+	$(PYTHON) gold_api.py --diff
 
+gold-api-json-diff: ensure-venv
+	$(PYTHON) gold_api.py --json --diff
+
+# --- Coin Valuation ---
 coin-valuation: ensure-venv
-	@if [ -z "$(coin)" ]; then echo "❌ Must set coin="; exit 1; fi; \
-	CMD="$(PYTHON) coin_valuation.py --coin $(coin)"; \
-	if [ -n "$(price)" ]; then CMD="$$CMD --price $(price)"; fi; \
-	if [ -n "$(paid)" ]; then CMD="$$CMD --paid $(paid)"; fi; \
-	if [ -n "$(profile)" ]; then CMD="$$CMD --profile $(profile)"; fi; \
-	echo "📈 Running: $$CMD"; \
-	eval "$$CMD"
+	$(PYTHON) coin_valuation.py --coin $(coin) --price $(price) --paid $(paid) --profile $(profile)
 
 coin-valuation-batch: ensure-venv
-	@if [ -z "$(file)" ]; then echo "❌ Must set file="; exit 1; fi; \
 	$(PYTHON) coin_valuation.py --batch $(file)
+
+# --- Coin Inventory ---
+coin-add: ensure-venv
+	$(PYTHON) coin_inventory.py add --coin $(coin) --price $(price) --quantity $(quantity) --condition $(condition) --date $(date) --source $(source) --notes "$(notes)"
+
+coin-list: ensure-venv
+	$(PYTHON) coin_inventory.py list
+
+coin-export: ensure-venv
+	$(PYTHON) coin_inventory.py export --format=$(format)
+
+coin-edit: ensure-venv
+	$(PYTHON) coin_inventory.py edit --id $(id) --price $(price) --quantity $(quantity) --condition $(condition) --date $(date) --source $(source) --notes "$(notes)"
+
+# --- Gold to Silver Ratio ---
+check-gsr: ensure-venv
+	$(PYTHON) gsr.py

@@ -4,40 +4,46 @@ import os
 import csv
 from gold_api import get_spot_prices
 from colorama import Fore, Style, init
+from config import load_user_config
 
 # Enable color output
 init(autoreset=True)
 
+# --- Load config ---
+config = load_user_config()
+profile_path = config.get("profile_path", "premium_profiles.json")
+
 # --- Load coin spec ---
-print("📄 Loading coin_spec.json...")
+print("\U0001F4C4 Loading coin_spec.json...")
 with open("coin_spec.json") as f:
     COIN_SPEC = json.load(f)
 
-# --- Argument parsing (to get profile path early) ---
+# --- Parse args ---
 parser = argparse.ArgumentParser(description="Evaluate coin melt value and premiums.")
 parser.add_argument("--coin", help="Coin key from coin_spec.json")
 parser.add_argument("--price", type=float, help="Offered price for comparison")
 parser.add_argument("--paid", type=float, help="Price actually paid (takes precedence over --price)")
 parser.add_argument("--profile", help="Override buyer profile for this run")
 parser.add_argument("--set-profile", help="Set default buyer profile for future runs")
-parser.add_argument("--add-profile", help="Add or update a premium profile (pass JSON string with name and category keys)")
+parser.add_argument("--add-profile", help="Add or update a premium profile (pass JSON string)")
 parser.add_argument("--batch", help="CSV file with columns: coin,price,profile")
-parser.add_argument("--profiles-path", default=os.getenv("PREMIUM_PROFILE_PATH", "premium_profiles.json"), help="Path to premium_profiles.json")
+parser.add_argument("--profiles-path", default=profile_path, help="Path to premium_profiles.json")
 args = parser.parse_args()
 
-# --- Load premium profiles from path ---
-print(f"📄 Loading {args.profiles_path}...")
+# --- Load premium profiles ---
+print(f"\U0001F4C4 Loading {args.profiles_path}...")
 with open(args.profiles_path) as f:
     PROFILE_DATA = json.load(f)
 
-# --- Helper functions for profile management ---
+# --- Profile helpers ---
 def get_default_profile():
-    return PROFILE_DATA.get("default_profile", "stacker")
+    return config.get("default_profile", PROFILE_DATA.get("default_profile", "stacker"))
 
 def set_default_profile(profile):
-    PROFILE_DATA["default_profile"] = profile
-    with open(args.profiles_path, "w") as f:
-        json.dump(PROFILE_DATA, f, indent=2)
+    config["default_profile"] = profile
+    with open("user_config.json", "w") as f:
+        json.dump(config, f, indent=2)
+    print(Fore.GREEN + f"✅ Default profile set to: {profile}")
 
 def edit_premium_profile(profile_name, category_premiums):
     PROFILE_DATA["profiles"][profile_name] = category_premiums
@@ -45,6 +51,7 @@ def edit_premium_profile(profile_name, category_premiums):
         json.dump(PROFILE_DATA, f, indent=2)
     print(Fore.GREEN + f"✅ Profile '{profile_name}' added/updated successfully.")
 
+# --- Spot and valuation helpers ---
 def get_spot_for_coin(coin, spot_prices):
     return spot_prices["gold"] if coin["type"] == "gold" else spot_prices["silver"]
 
@@ -71,10 +78,9 @@ def calculate_values(coin_key, spot_prices, actual_price=None, profile_override=
     if coin_key not in COIN_SPEC:
         return {"error": f"Coin '{coin_key}' not found in spec."}
 
-    profile = profile_override or get_default_profile()
     coin = COIN_SPEC[coin_key]
+    profile = profile_override or get_default_profile()
     category = coin["category"]
-
     spot_price = get_spot_for_coin(coin, spot_prices)
     melt_value = coin["metal_content_oz"] * spot_price
     allowed_premium_pct = PROFILE_DATA["profiles"][profile][category]
@@ -112,7 +118,6 @@ def evaluate_single(args, spot_prices):
 
     if args.set_profile:
         set_default_profile(args.set_profile)
-        print(Fore.GREEN + f"✅ Default profile set to: {args.set_profile}")
         return
 
     if args.add_profile:
@@ -146,7 +151,6 @@ def evaluate_batch(args, spot_prices):
 if __name__ == "__main__":
     if args.set_profile:
         set_default_profile(args.set_profile)
-        print(Fore.GREEN + f"✅ Default profile set to: {args.set_profile}")
     elif args.add_profile:
         try:
             profile_dict = json.loads(args.add_profile)
