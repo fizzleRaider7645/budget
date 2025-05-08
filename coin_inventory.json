@@ -15,5 +15,21 @@
     "premium_pct": 0.2671,
     "notes": "Adjusted premium",
     "spot_price_at_purchase": 32.65
+  },
+  {
+    "id": "dcc08931-ef0d-4ba4-b38c-fefb2fd1279e",
+    "coin": "peace_dollar",
+    "type": "silver",
+    "category": "junk",
+    "price_paid": 30.5,
+    "quantity": 2,
+    "condition": "AU",
+    "source": "eBay",
+    "date": "2025-05-06",
+    "spot_price_at_purchase": 32.47,
+    "melt_value": 25.11,
+    "premium_dollar": 5.39,
+    "premium_pct": 0.2146,
+    "notes": "Toned"
   }
 ]
