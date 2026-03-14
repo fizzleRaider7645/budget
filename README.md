@@ -301,4 +301,4 @@ Status:           ❌ Too Expensive
 
 ## 🙌 License & Credits
 
-Built with ❤️ by [You], powered by Python, gspread, pandas, and GoldAPI.
+Built with ❤️ by Douglas, powered by Python, gspread, pandas, and GoldAPI.

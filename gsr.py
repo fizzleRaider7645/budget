@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 from gold_api import get_spot_prices
 from colorama import Fore, Style, init
 from config import load_user_config
@@ -17,7 +17,7 @@ def save_gsr_to_cache(gsr):
         data = []
 
     data.append({
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat() + "Z",
         "gsr": gsr
     })
 
